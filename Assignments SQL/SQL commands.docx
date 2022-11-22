@@ -1,0 +1,141 @@
+
+create table CustomerDetails(Custid int NOT NULL AUTO_INCREMENT,Custname varchar(40),CustAddress varchar(50),CustCity varchar(20),PhoneNo varchar(10),Email varchar(20),Gender varchar(10),DOB date,DOR date,PRIMARY KEY (Custid));
+
+create table Company(comid int NOT NULL AUTO_INCREMENT,compname varchar(50),address varchar(60),email varchar(40),phone bigint(10));
+
+create table Product(pid int, pname varchar(50),Catid int ,FOREIGN KEY (Catid) REFERENCES Category (Catid),mes_unit varchar(30),price int,mfdate date,expirydate date,comid int,FOREIGN KEY (comid) REFERENCES Company(comid),PRIMARY KEY(pid));
+
+create table Bill(billno int NOT NULL AUTO_INCREMENT,billdate date,Custid int,FOREIGN KEY (Custid) REFERENCES CustomerDetails(Custid),PRIMARY KEY(billno));
+
+create table Billitem(billitemid int NOT NULL AUTO_INCREMENT,billno int,FOREIGN KEY(billno) REFERENCES Bill(billno),pid int,FOREIGN KEY(pid) REFERENCES Product(pid),quantity int,price DECIMAL,PRIMARY KEY(billitemid));
+
+
+
+
+1.select * from CustomerDetails
+where Custid not in (select Custid from bill) ;
+
+
+2.select Catid from product
+where pid= (select pid from billitem where price = (select max(price) from billitem));
+
+
+
+3.select Catid from product
+where pid= (select pid from billitem where price = (select min(price) from billitem));
+
+
+4.select p.catid,count(bi.billitemid),c.compname
+from
+product as p
+inner join
+billitem as bi
+on p.pid=bi.pid
+inner join
+Company as c
+on c.comid=p.comid
+group by p.catid;
+
+
+5.select c.Custname,b.billno,b.billdate
+from
+customerDetails as c
+inner join
+bill as b
+on c.Custid=b.Custid
+order by b.billdate;
+
+
+6.
+select c.Custname,sum(price)
+from
+billitem as bi
+inner join
+bill as b
+on bi.billno=b.billno
+inner join
+customerDetails as c
+on c.Custid=b.Custid
+group by b.Custid;
+
+
+7
+select c.compname,count(bi.billitemid)
+from
+product as p
+inner join
+billitem as bi
+on p.pid=bi.pid
+inner join
+Company as c
+on c.comid=p.comid
+group by p.comid;
+
+
+8
+select com.compname,c.catname,count(p.pid)
+from
+product as p
+inner join
+category as c
+on p.catid=c.catid
+inner join
+Company as com
+on com.comid=p.comid
+group by p.catid;
+
+
+10
+select count(bi.billno),b.billdate
+from
+billitem as bi
+inner join
+bill as b
+on b.billno=bi.billno
+group by b.billdate;
+
+
+11
+select * from product
+where expirydate> now() - INTERVAL 15 day;
+
+
+12
+select c.Custname,count(bi.pid)
+from
+customerDetails as c
+inner join
+bill as b
+on c.Custid=b.Custid
+inner join
+billitem as bi
+on b.billno= bi.billno
+inner join
+product as p
+on p.pid=bi.pid
+group by b.Custid;
+
+
+
+13
+select b.billdate,sum(bi.price)
+from
+bill as b
+inner join
+billitem as bi
+on b.billno= bi.billno
+group by b.billdate;
+
+14
+ select * from (
+    select Category,Product_Id,
+    rank() over (partition by category order by discount desc, product_id asc) as product_rank
+    from Product) x
+where x.product_rank=1
+order by category;
+
+15
+ select DateAdded, count(CustID)
+from Responses
+WHERE DateAdded >=dateadd(day,datediff(day,0,GetDate())- 7,0)
+GROUP BY DateAdded
